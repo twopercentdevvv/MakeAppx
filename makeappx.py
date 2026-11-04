@@ -52,7 +52,7 @@ if not os.environ.get("GITHUB_ACTIONS"):
 
 DOWNLOADS.mkdir(exist_ok=True)
 for arch in ["x64", "x86"]:
-	MSI_FILENAME = f"Windows App Certification Kit Native Components-{arch}_en-us.msi"
+	MSI_FILENAME = f"Windows App Certification Kit {arch}-x86_en-us.msi"
 	print(f"Downloading {MSI_FILENAME}...")
 	msi = download_payload(MSI_FILENAME)			
 	cabs = get_msi_cabs(msi)
