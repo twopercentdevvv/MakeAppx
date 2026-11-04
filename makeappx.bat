@@ -1,0 +1,2 @@
+python makeappx.py
+pause
