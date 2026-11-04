@@ -1,6 +1,7 @@
 from pathlib import Path
 import urllib.request
 import json
+import os
 import shutil
 import subprocess
 
@@ -19,9 +20,6 @@ def get_msi_cabs(msi):
 		if index < 0:
 			return
 		yield msi[index-32:index+4].decode("ascii")
-
-def get_sub_dirs(path):
-	return [x for x in path.iterdir() if x.is_dir()]
 
 MANIFEST_URL = "https://aka.ms/vs/stable/channel"
 print("Checking Visual Studio Manifest...")
@@ -47,27 +45,26 @@ def download_payload(filename):
 				file.write(data)
 			return data			
 
-yes = input(f"Do you accept Microsoft Visual Studio license: {license} [Y/N] ? ")
-if yes.upper() not in ["", "YES", "Y"]:
-	exit(0)
+if not os.environ.get("GITHUB_ACTIONS"):
+	yes = input(f"Do you accept Microsoft Visual Studio license: {license} [Y/N] ? ")
+	if yes.upper() not in ["", "YES", "Y"]:
+		exit(0)
 
-MSI_FILENAME = "Windows SDK Signing Tools-x86_en-us.msi"
-print(f"Downloading {MSI_FILENAME}...")
 DOWNLOADS.mkdir(exist_ok=True)
-msi = download_payload(MSI_FILENAME)			
-cabs = get_msi_cabs(msi)
-for cab in cabs:
-	download_payload(cab)
+for arch in ["x64", "x86"]:
+	MSI_FILENAME = f"Windows App Certification Kit Native Components-{arch}_en-us.msi"
+	print(f"Downloading {MSI_FILENAME}...")
+	msi = download_payload(MSI_FILENAME)			
+	cabs = get_msi_cabs(msi)
+	for cab in cabs:
+		download_payload(cab)
 
-print(f"Unpacking {MSI_FILENAME}...")
-ARCHIVES = DOWNLOADS / "Archives"
-shutil.rmtree(ARCHIVES, ignore_errors=True)
-subprocess.run(["msiexec.exe", "/a", DOWNLOADS / MSI_FILENAME, "/quiet", "/qn", f"TARGETDIR={ARCHIVES.resolve()}"])
+	print(f"Unpacking {MSI_FILENAME}...")
+	ARCHIVES = DOWNLOADS / "Archives" / arch
+	shutil.rmtree(ARCHIVES, ignore_errors=True)
+	subprocess.run(["msiexec.exe", "/a", DOWNLOADS / MSI_FILENAME, "/quiet", "/qn", f"TARGETDIR={ARCHIVES.resolve()}"])
 
-print(f"Creating Zip in {RELEASES.resolve()}...")
-SDK = get_sub_dirs(ARCHIVES / "Windows Kits/10/bin")[0]
-ARCHS = get_sub_dirs(SDK)
-for arch in ARCHS:
-	shutil.make_archive(RELEASES / f"SignTool-{version}-{arch.name}", "zip", arch)
+	print(f"Creating Zip in {RELEASES.resolve()}...")
+	shutil.make_archive(RELEASES / f"MakeAppx-{version}-{arch}", "zip", next(ARCHIVES.rglob("makeappx.exe")).parent)
 
 print("Done!")
