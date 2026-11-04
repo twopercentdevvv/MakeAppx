@@ -51,20 +51,22 @@ if not os.environ.get("GITHUB_ACTIONS"):
 		exit(0)
 
 DOWNLOADS.mkdir(exist_ok=True)
-for arch in ["x64", "x86"]:
-	MSI_FILENAME = f"Windows App Certification Kit {arch}-x86_en-us.msi"
-	print(f"Downloading {MSI_FILENAME}...")
-	msi = download_payload(MSI_FILENAME)			
-	cabs = get_msi_cabs(msi)
-	for cab in cabs:
-		download_payload(cab)
+MSI_FILENAME = "Windows SDK for Windows Store Apps Tools-x86_en-us.msi"
+print(f"Downloading {MSI_FILENAME}...")
+msi = download_payload(MSI_FILENAME)
+cabs = get_msi_cabs(msi)
+for cab in cabs:
+	download_payload(cab)
 
-	print(f"Unpacking {MSI_FILENAME}...")
-	ARCHIVES = DOWNLOADS / "Archives" / arch
-	shutil.rmtree(ARCHIVES, ignore_errors=True)
-	subprocess.run(["msiexec.exe", "/a", DOWNLOADS / MSI_FILENAME, "/quiet", "/qn", f"TARGETDIR={ARCHIVES.resolve()}"])
+print(f"Unpacking {MSI_FILENAME}...")
+ARCHIVES = DOWNLOADS / "Archives"
+shutil.rmtree(ARCHIVES, ignore_errors=True)
+subprocess.run(["msiexec.exe", "/a", DOWNLOADS / MSI_FILENAME, "/quiet", "/qn", f"TARGETDIR={ARCHIVES.resolve()}"])
 
-	print(f"Creating Zip in {RELEASES.resolve()}...")
-	shutil.make_archive(RELEASES / f"MakeAppx-{version}-{arch}", "zip", next(ARCHIVES.rglob("makeappx.exe")).parent)
+print(f"Creating Zip in {RELEASES.resolve()}...")
+SDK = next((ARCHIVES / "Windows Kits/10/bin").iterdir())
+for arch in SDK.iterdir():
+	if arch.is_dir():
+		shutil.make_archive(RELEASES / f"MakeAppx-{version}-{arch.name}", "zip", arch)
 
 print("Done!")
