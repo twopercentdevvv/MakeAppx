@@ -39,7 +39,7 @@ for i in range(len(packages)-1, -1, -1):
 
 def download_payload(filename):
 	for p in payloads:
-		if p["fileName"] == "Installers\\" + filename:
+		if p["fileName"].replace("\\", "/") == "Installers/" + filename:
 			data = download(p["url"])
 			with open(DOWNLOADS / filename, "wb") as file:
 				file.write(data)
