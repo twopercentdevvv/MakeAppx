@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: python makeappx.py
+
+      - name: Publish if new
+        shell: bash
+        run: |
+          f=$(ls Releases/*-x64.zip)
+          v=${f#Releases/MakeAppx-}
+          v=${v%-x64.zip}
+          if gh release view "$v" > /dev/null 2>&1; then
+            echo "$v already released"
+          else
+            gh release create "$v" Releases/*.zip --title "$v"
+          fi
