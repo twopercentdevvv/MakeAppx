@@ -1,13 +1,13 @@
-# SignTool.exe
-Windows SDK Signing Tools for Desktop Apps: Extract from Windows 11 SDK.
+# MakeAppx.exe
+Windows SDK App Certification Kit: Extract MakeAppx from Windows 11 SDK (x64 and x86).
 
 ## Download
 Download from [Releases](../../releases) or build latest version:
 ```
-python signtool.py
+python makeappx.py
 ```
 
 ## How to use
 ```
-signtool.exe sign /f Cert.pfx /p <password> /fd SHA256 /td SHA256 /tr http://timestamp.com App.exe
+makeappx.exe pack /d <folder> /p App.msix
 ```
