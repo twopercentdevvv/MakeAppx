@@ -1,5 +1,5 @@
 # MakeAppx.exe
-Windows SDK App Certification Kit: Extract MakeAppx from Windows 11 SDK (x64 and x86).
+Extracted from Windows 11 SDK.
 
 ## Download
 Download from [Releases](../../releases) or build latest version:
